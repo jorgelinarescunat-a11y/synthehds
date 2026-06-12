@@ -1,0 +1,145 @@
+# ============================================================
+# PREVALENCIAS Y DISTRIBUCIONES CLINICAS - DIABETES TIPO 2 ESPANA
+# ============================================================
+# Fuentes oficiales (CITAR SIEMPRE en el data sheet):
+#
+# [1] Soriguer F, Goday A, Bosch-Comas A, et al.
+#     Prevalence of diabetes mellitus and impaired glucose regulation
+#     in Spain: the Di@bet.es Study.
+#     Diabetologia. 2012;55:88-93.
+#
+# [2] Ministerio de Sanidad. Prevalencia de diabetes mellitus en 2016
+#     en Espana segun la Base de Datos Clinicos de Atencion Primaria (BDCAP).
+#     Endocrinologia, Diabetes y Nutricion. 2021.
+#     DOI: 10.1016/j.endinu.2020.03.019
+#
+# [3] Ruiz-Garcia A, et al. Prevalencia de diabetes mellitus en el ambito
+#     de la atencion primaria espanola y su asociacion con factores
+#     de riesgo cardiovascular. Estudio SIMETAP-DM.
+#     Clinica e Investigacion en Arteriosclerosis. 2020.
+#
+# [4] Estudio Cantabria sobre retinopatia diabetica.
+#     Atencion Primaria. 2020. DOI: 10.1016/j.aprim.2018.09.004
+#
+# [5] Mata-Cases M et al. RedgedapS. Caracteristicas clinicas y
+#     tratamiento antidiabetico en DM2 en atencion primaria espanola.
+#     Medicina de Familia SEMERGEN. 2021.
+
+prevalencia_global:
+  porcentaje_poblacion_adulta: 13.8
+  porcentaje_diagnosticados_sns: 6.66
+  no_diagnosticados_pct: 43.0
+
+incidencia:
+  casos_por_1000_personas_ano: 11.6
+  nuevos_casos_anuales_estimados: 386000
+
+prevalencia_por_edad_sexo:
+  "18_40":    { hombre: 2.0,  mujer: 1.5 }
+  "41_60":    { hombre: 12.0, mujer: 8.0 }
+  "61_75":    { hombre: 42.4, mujer: 29.8 }
+  mayor_75:   { hombre: 37.4, mujer: 41.3 }
+
+variacion_regional:
+  prevalencia_alta:
+    - Andalucia
+    - Extremadura
+    - Murcia
+    - Canarias
+  prevalencia_media:
+    - Cataluna
+    - Comunidad Valenciana
+    - Madrid
+    - Castilla-La Mancha
+    - Galicia
+    - Castilla y Leon
+  prevalencia_baja:
+    - Pais Vasco
+    - Navarra
+    - Aragon
+    - Cantabria
+    - Asturias
+    - La Rioja
+    - Baleares
+
+perfil_clinico_tipico:
+  edad_media_diagnostico: 58.97
+  edad_media_paciente_actual: 70.0
+  imc_medio: 29.86
+  imc_desviacion_estandar: 4.8
+  anos_evolucion_media: 9.2
+  anos_evolucion_desv_estandar: 6.8
+
+control_glucemico_hba1c:
+  menor_7_pct: 63.4
+  entre_7_y_8_pct: 21.6
+  mayor_igual_8_pct: 15.0
+  rango_realista: [5.5, 13.0]
+
+biomarcadores_distribucion:
+  glucemia_basal_mg_dl:
+    media: 142
+    desv: 35
+    rango: [80, 350]
+  ldl_mg_dl:
+    media: 105
+    desv: 30
+    rango: [40, 250]
+  hdl_mg_dl:
+    hombre: { media: 42, desv: 10 }
+    mujer:  { media: 50, desv: 12 }
+  trigliceridos_mg_dl:
+    media: 165
+    desv: 80
+    rango: [50, 600]
+  presion_sistolica_mmhg:
+    media: 138
+    desv: 15
+  presion_diastolica_mmhg:
+    media: 82
+    desv: 10
+  filtrado_glomerular_ml_min:
+    media: 78
+    desv: 22
+
+comorbilidades_pct:
+  hipertension: 78.4
+  dislipemia: 67.3
+  obesidad_imc_mayor30: 35.0
+  enfermedad_renal_cronica: 23.0
+  retinopatia: 8.56
+  neuropatia: 25.0
+  cardiopatia_isquemica: 12.0
+  insuficiencia_cardiaca: 8.5
+  enfermedad_arterial_periferica: 7.0
+  ictus_previo: 5.5
+
+correlaciones_comorbilidades:
+  retinopatia_si_hba1c_alta: 2.5
+  retinopatia_si_hta_grado2: 10.0
+  nefropatia_si_hta: 3.0
+  nefropatia_si_anos_evol_mayor10: 2.8
+  cardiopatia_si_dislipemia: 2.2
+
+tratamiento_farmacologico_pct:
+  metformina: 66.3
+  insulina: 21.3
+  sulfonilureas: 19.0
+  idpp4: 17.0
+  isglt2: 15.0
+  arglp1: 10.0
+  pioglitazona: 3.0
+
+reglas_prescripcion:
+  - condicion: "primer_diagnostico AND hba1c < 9"
+    tratamiento_preferente: ["metformina"]
+  - condicion: "primer_diagnostico AND hba1c >= 9"
+    tratamiento_preferente: ["metformina + idpp4", "metformina + isglt2"]
+  - condicion: "enfermedad_cardiovascular OR insuficiencia_cardiaca"
+    tratamiento_preferente_anadir: ["isglt2", "arglp1"]
+  - condicion: "enfermedad_renal_cronica AND fge >= 30"
+    tratamiento_preferente_anadir: ["isglt2"]
+  - condicion: "obesidad AND imc > 30"
+    tratamiento_preferente_anadir: ["isglt2", "arglp1"]
+  - condicion: "fracaso_triple_terapia"
+    tratamiento_preferente_anadir: ["insulina_basal"]

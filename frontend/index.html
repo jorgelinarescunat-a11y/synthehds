@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SynthEHDS — generador de cohortes sintéticas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      [data-page] { animation: fadeIn 0.18s ease-out; }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(2px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      .nav-tab.active {
+        background-color: rgb(29 78 216);
+        color: white;
+      }
+      .nav-tab.active:hover { background-color: rgb(30 64 175); }
+    </style>
+  </head>
+  <body class="bg-slate-50 text-slate-800">
+    <!--
+      Demo estática autocontenida. El <script type="module"> al final está
+      pensado para `vite dev`: cuando React monte, sobrescribirá #root con
+      el SPA real (frontend/src/main.tsx).
+    -->
+    <div id="root">
+      <header class="border-b border-slate-200 bg-white">
+        <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+          <div class="flex items-center gap-2">
+            <div class="h-8 w-8 rounded bg-blue-700 flex items-center justify-center text-white font-bold text-sm">S</div>
+            <span class="text-lg font-semibold">SynthEHDS</span>
+            <span class="text-xs text-slate-400 ml-1">MVP · demo estática</span>
+          </div>
+          <nav class="flex items-center gap-1 text-xs">
+            <button data-tab="landing"  class="nav-tab active px-3 py-1.5 rounded hover:bg-slate-100">Landing</button>
+            <button data-tab="wizard"   class="nav-tab px-3 py-1.5 rounded hover:bg-slate-100">Wizard</button>
+            <button data-tab="progress" class="nav-tab px-3 py-1.5 rounded hover:bg-slate-100">Progreso</button>
+            <button data-tab="results"  class="nav-tab px-3 py-1.5 rounded hover:bg-slate-100">Resultados</button>
+            <button data-tab="history"  class="nav-tab px-3 py-1.5 rounded hover:bg-slate-100">Historial</button>
+          </nav>
+        </div>
+      </header>
+
+      <main class="mx-auto max-w-6xl px-6 py-10">
+
+        <!-- ════════════ LANDING ════════════ -->
+        <section data-page="landing">
+          <div class="rounded-lg bg-white p-10 shadow-sm">
+            <h1 class="text-3xl font-bold text-slate-900">
+              Datos sintéticos de diabetes T2 en España
+            </h1>
+            <p class="mt-3 text-slate-600 max-w-2xl">
+              Genera cohortes realistas pero no sensibles para prototipar modelos
+              de IA, validar pipelines clínicos y formar a equipos data science.
+              Sin pacientes reales — distribuciones epidemiológicas, Bayesian
+              Network y reglas clínicas.
+            </p>
+            <div class="mt-6 flex gap-3">
+              <button data-tab="wizard" class="rounded bg-blue-700 px-5 py-2 text-white text-sm font-medium hover:bg-blue-800">
+                Generar cohorte
+              </button>
+              <button data-tab="history" class="rounded border border-slate-300 px-5 py-2 text-sm font-medium hover:bg-slate-100">
+                Ver historial
+              </button>
+            </div>
+          </div>
+
+          <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="rounded-lg border border-slate-200 bg-white p-5">
+              <h3 class="font-semibold text-slate-800">Fuentes oficiales</h3>
+              <p class="mt-2 text-sm text-slate-600">
+                5 estudios españoles (Di@bet.es, BDCAP, SIMETAP, Cantabria,
+                RedgedapS) citados en el data sheet PDF.
+              </p>
+            </div>
+            <div class="rounded-lg border border-slate-200 bg-white p-5">
+              <h3 class="font-semibold text-slate-800">Estándares de salida</h3>
+              <p class="mt-2 text-sm text-slate-600">
+                CSV plano, FHIR Bundle JSON y OMOP CDM v5.4 (5 tablas).
+              </p>
+            </div>
+            <div class="rounded-lg border border-slate-200 bg-white p-5">
+              <h3 class="font-semibold text-slate-800">EHDS-compliant</h3>
+              <p class="mt-2 text-sm text-slate-600">
+                Declaración legal explícita, sin datos identificables,
+                uso secundario investigador/formativo.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ════════════ WIZARD ════════════ -->
+        <section data-page="wizard" hidden>
+          <h1 class="text-2xl font-bold">Configurar cohorte</h1>
+          <p class="text-sm text-slate-500 mt-1">
+            Define los parámetros del dataset sintético.
+          </p>
+
+          <div class="mt-6 space-y-6 rounded-lg bg-white p-6 shadow-sm">
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">
+                Número de pacientes (50–10 000)
+              </label>
+              <input type="number" value="200"
+                class="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none" />
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Edad mínima</label>
+                <input type="number" value="50"
+                  class="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Edad máxima</label>
+                <input type="number" value="80"
+                  class="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Distribución de sexo</label>
+              <select class="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                <option>Real (literatura)</option>
+                <option>Equilibrado 50/50</option>
+                <option>Más hombres (70 %)</option>
+                <option>Más mujeres (70 %)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Foco regional</label>
+              <select class="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                <option>Toda España</option>
+                <option>Prevalencia alta (sur)</option>
+                <option>Prevalencia media</option>
+                <option>Prevalencia baja (norte)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">
+                Forzar comorbilidades (todos los pacientes la tienen)
+              </label>
+              <div class="flex flex-wrap gap-2">
+                <button class="rounded-full bg-blue-700 border border-blue-700 text-white px-3 py-1 text-xs">hipertension</button>
+                <button class="rounded-full border border-slate-300 hover:bg-slate-100 px-3 py-1 text-xs">dislipemia</button>
+                <button class="rounded-full border border-slate-300 hover:bg-slate-100 px-3 py-1 text-xs">nefropatia</button>
+                <button class="rounded-full border border-slate-300 hover:bg-slate-100 px-3 py-1 text-xs">retinopatia</button>
+                <button class="rounded-full border border-slate-300 hover:bg-slate-100 px-3 py-1 text-xs">neuropatia</button>
+                <button class="rounded-full border border-slate-300 hover:bg-slate-100 px-3 py-1 text-xs">cardiopatia</button>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">
+                Excluir comorbilidades (ningún paciente la tiene)
+              </label>
+              <div class="flex flex-wrap gap-2">
+                <button class="rounded-full border border-slate-300 hover:bg-slate-100 px-3 py-1 text-xs">hipertension</button>
+                <button class="rounded-full border border-slate-300 hover:bg-slate-100 px-3 py-1 text-xs">dislipemia</button>
+                <button class="rounded-full border border-slate-300 hover:bg-slate-100 px-3 py-1 text-xs">nefropatia</button>
+                <button class="rounded-full border border-slate-300 hover:bg-slate-100 px-3 py-1 text-xs">retinopatia</button>
+                <button class="rounded-full border border-slate-300 hover:bg-slate-100 px-3 py-1 text-xs">neuropatia</button>
+                <button class="rounded-full bg-blue-700 border border-blue-700 text-white px-3 py-1 text-xs">cardiopatia</button>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">
+                Notas clínicas con Claude (más lento)
+              </label>
+              <label class="inline-flex items-center gap-2">
+                <input type="checkbox" checked class="rounded" />
+                <span class="text-sm">Generar nota SOAP por encuentro</span>
+              </label>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">
+                Seed (opcional — reproducibilidad)
+              </label>
+              <input type="number" value="42" placeholder="aleatorio"
+                class="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none" />
+            </div>
+
+            <button data-tab="progress" class="rounded bg-blue-700 px-6 py-2 text-white text-sm font-medium hover:bg-blue-800">
+              Generar cohorte
+            </button>
+          </div>
+        </section>
+
+        <!-- ════════════ PROGRESS ════════════ -->
+        <section data-page="progress" hidden>
+          <h1 class="text-2xl font-bold">Generando cohorte…</h1>
+          <p class="text-xs text-slate-500 mt-1 font-mono">
+            job · fa3e7c91-d0b8-4f12-8e9a-3d2b7a1c8e4f
+          </p>
+
+          <div class="mt-8 rounded-lg bg-white p-6 shadow-sm">
+            <div class="flex items-center justify-between text-sm">
+              <span class="font-medium">Estado:</span>
+              <span class="px-2 py-1 rounded bg-amber-100 text-amber-700 text-xs">running</span>
+            </div>
+            <div class="mt-4 h-2 rounded-full bg-slate-200 overflow-hidden">
+              <div class="h-full bg-blue-600 transition-all" style="width: 75%"></div>
+            </div>
+            <div class="mt-2 text-xs text-slate-500">
+              75 % — Generando notas clínicas con Claude…
+            </div>
+
+            <div class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px]">
+              <div class="flex items-center gap-1 text-emerald-700">
+                <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                Forward sampling BN
+              </div>
+              <div class="flex items-center gap-1 text-emerald-700">
+                <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                Encuentros longitudinales
+              </div>
+              <div class="flex items-center gap-1 text-emerald-700">
+                <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                Métricas de calidad
+              </div>
+              <div class="flex items-center gap-1 text-amber-700">
+                <span class="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                Notas SOAP (Claude)
+              </div>
+            </div>
+
+            <button data-tab="results" class="mt-6 rounded bg-slate-100 px-4 py-2 text-xs hover:bg-slate-200">
+              [demo] saltar a resultados →
+            </button>
+          </div>
+        </section>
+
+        <!-- ════════════ RESULTS ════════════ -->
+        <section data-page="results" hidden>
+          <h1 class="text-2xl font-bold">Resultados</h1>
+          <p class="text-xs text-slate-500 mt-1 font-mono">
+            dataset · fa3e7c91-d0b8-4f12-8e9a-3d2b7a1c8e4f
+          </p>
+
+          <!-- Stat cards -->
+          <section class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="rounded-lg bg-white p-4 shadow-sm">
+              <div class="text-xs text-slate-500">Pacientes</div>
+              <div class="text-2xl font-semibold mt-1">200</div>
+            </div>
+            <div class="rounded-lg bg-white p-4 shadow-sm">
+              <div class="text-xs text-slate-500">Coherencia clínica</div>
+              <div class="text-2xl font-semibold mt-1 text-emerald-700">100%</div>
+            </div>
+            <div class="rounded-lg bg-white p-4 shadow-sm">
+              <div class="text-xs text-slate-500">Combinaciones únicas</div>
+              <div class="text-2xl font-semibold mt-1">87.5%</div>
+            </div>
+            <div class="rounded-lg bg-white p-4 shadow-sm">
+              <div class="text-xs text-slate-500">Variables categóricas</div>
+              <div class="text-2xl font-semibold mt-1">10</div>
+            </div>
+          </section>
+
+          <!-- Chart + Downloads -->
+          <section class="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div class="lg:col-span-2 rounded-lg bg-white p-5 shadow-sm">
+              <h3 class="font-semibold mb-3 text-sm">Distribuciones — observado vs YAML</h3>
+
+              <div class="flex items-end justify-around h-56 px-2 border-b border-slate-100">
+                <!-- HTA -->
+                <div class="flex flex-col items-center gap-1">
+                  <div class="flex items-end gap-1 h-48">
+                    <div class="w-6 bg-blue-700 rounded-t relative" style="height: 95%">
+                      <span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] text-blue-700 font-medium">76</span>
+                    </div>
+                    <div class="w-6 bg-slate-400 rounded-t relative" style="height: 98%">
+                      <span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] text-slate-500">78</span>
+                    </div>
+                  </div>
+                </div>
+                <!-- Dislipemia -->
+                <div class="flex flex-col items-center gap-1">
+                  <div class="flex items-end gap-1 h-48">
+                    <div class="w-6 bg-blue-700 rounded-t relative" style="height: 80%">
+                      <span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] text-blue-700 font-medium">64</span>
+                    </div>
+                    <div class="w-6 bg-slate-400 rounded-t relative" style="height: 84%">
+                      <span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] text-slate-500">67</span>
+                    </div>
+                  </div>
+                </div>
+                <!-- Nefropatía -->
+                <div class="flex flex-col items-center gap-1">
+                  <div class="flex items-end gap-1 h-48">
+                    <div class="w-6 bg-blue-700 rounded-t relative" style="height: 31%">
+                      <span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] text-blue-700 font-medium">25</span>
+                    </div>
+                    <div class="w-6 bg-slate-400 rounded-t relative" style="height: 29%">
+                      <span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] text-slate-500">23</span>
+                    </div>
+                  </div>
+                </div>
+                <!-- Retinopatía -->
+                <div class="flex flex-col items-center gap-1">
+                  <div class="flex items-end gap-1 h-48">
+                    <div class="w-6 bg-blue-700 rounded-t relative" style="height: 13%">
+                      <span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] text-blue-700 font-medium">10</span>
+                    </div>
+                    <div class="w-6 bg-slate-400 rounded-t relative" style="height: 11%">
+                      <span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] text-slate-500">8.6</span>
+                    </div>
+                  </div>
+                </div>
+                <!-- Neuropatía -->
+                <div class="flex flex-col items-center gap-1">
+                  <div class="flex items-end gap-1 h-48">
+                    <div class="w-6 bg-blue-700 rounded-t relative" style="height: 34%">
+                      <span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] text-blue-700 font-medium">27</span>
+                    </div>
+                    <div class="w-6 bg-slate-400 rounded-t relative" style="height: 31%">
+                      <span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] text-slate-500">25</span>
+                    </div>
+                  </div>
+                </div>
+                <!-- Cardiopatía -->
+                <div class="flex flex-col items-center gap-1">
+                  <div class="flex items-end gap-1 h-48">
+                    <div class="w-6 bg-blue-700 rounded-t relative" style="height: 16%">
+                      <span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] text-blue-700 font-medium">13</span>
+                    </div>
+                    <div class="w-6 bg-slate-400 rounded-t relative" style="height: 15%">
+                      <span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] text-slate-500">12</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="flex justify-around mt-2 px-2 text-[11px] text-slate-700 font-medium">
+                <span>HTA</span><span>Dislip.</span><span>Nefro.</span>
+                <span>Retino.</span><span>Neuro.</span><span>Cardio.</span>
+              </div>
+
+              <div class="mt-4 flex gap-4 text-xs">
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 bg-blue-700 rounded-sm"></span>Observado</span>
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 bg-slate-400 rounded-sm"></span>Esperado (YAML)</span>
+              </div>
+            </div>
+
+            <div class="rounded-lg bg-white p-5 shadow-sm">
+              <h3 class="font-semibold mb-3 text-sm">Descargas</h3>
+              <ul class="space-y-2 text-sm">
+                <li>
+                  <a href="#" class="text-blue-700 hover:underline flex items-center gap-2">
+                    <span class="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-mono">CSV</span>
+                    cohort_fa3e7c91.csv
+                  </a>
+                </li>
+                <li>
+                  <a href="#" class="text-blue-700 hover:underline flex items-center gap-2">
+                    <span class="text-xs px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 font-mono">FHIR</span>
+                    Bundle JSON
+                  </a>
+                </li>
+                <li>
+                  <a href="#" class="text-blue-700 hover:underline flex items-center gap-2">
+                    <span class="text-xs px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 font-mono">OMOP</span>
+                    CDM v5.4 (5 CSVs)
+                  </a>
+                </li>
+                <li>
+                  <a href="#" class="text-blue-700 hover:underline flex items-center gap-2">
+                    <span class="text-xs px-1.5 py-0.5 rounded bg-red-100 text-red-700 font-mono">PDF</span>
+                    Data sheet (citas + métricas)
+                  </a>
+                </li>
+              </ul>
+
+              <div class="mt-5 pt-4 border-t border-slate-100 text-[11px] text-slate-500">
+                Generado el 17/05/2026 a las 12:34 UTC.
+                <br/>Software: SynthEHDS 0.1.0
+              </div>
+            </div>
+          </section>
+
+          <!-- Preview table -->
+          <section class="mt-6 rounded-lg bg-white p-5 shadow-sm overflow-x-auto">
+            <h3 class="font-semibold text-sm mb-3">Preview — primeros 8 pacientes (de 200)</h3>
+            <table class="min-w-full text-xs">
+              <thead>
+                <tr class="text-left text-slate-500 border-b">
+                  <th class="py-2 pr-3 font-medium">ID</th>
+                  <th class="py-2 pr-3 font-medium">Sexo</th>
+                  <th class="py-2 pr-3 font-medium">Edad</th>
+                  <th class="py-2 pr-3 font-medium">Región</th>
+                  <th class="py-2 pr-3 font-medium">HbA1c</th>
+                  <th class="py-2 pr-3 font-medium">IMC</th>
+                  <th class="py-2 pr-3 font-medium">HTA</th>
+                  <th class="py-2 pr-3 font-medium">Dislip.</th>
+                  <th class="py-2 pr-3 font-medium">Nefro.</th>
+                  <th class="py-2 pr-3 font-medium">Insulina</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-b"><td class="py-2 pr-3 font-mono text-[10px]">bdb4eb38…</td><td class="py-2 pr-3">mujer</td><td class="py-2 pr-3">65</td><td class="py-2 pr-3">Andalucía</td><td class="py-2 pr-3">7.4</td><td class="py-2 pr-3">31.2</td><td class="py-2 pr-3">✓</td><td class="py-2 pr-3">✓</td><td class="py-2 pr-3">—</td><td class="py-2 pr-3">✓</td></tr>
+                <tr class="border-b"><td class="py-2 pr-3 font-mono text-[10px]">7a2c1b50…</td><td class="py-2 pr-3">hombre</td><td class="py-2 pr-3">72</td><td class="py-2 pr-3">Madrid</td><td class="py-2 pr-3">8.1</td><td class="py-2 pr-3">28.7</td><td class="py-2 pr-3">✓</td><td class="py-2 pr-3">✓</td><td class="py-2 pr-3">✓</td><td class="py-2 pr-3">—</td></tr>
+                <tr class="border-b"><td class="py-2 pr-3 font-mono text-[10px]">d8e91f2a…</td><td class="py-2 pr-3">mujer</td><td class="py-2 pr-3">58</td><td class="py-2 pr-3">Cataluña</td><td class="py-2 pr-3">6.8</td><td class="py-2 pr-3">27.4</td><td class="py-2 pr-3">—</td><td class="py-2 pr-3">✓</td><td class="py-2 pr-3">—</td><td class="py-2 pr-3">—</td></tr>
+                <tr class="border-b"><td class="py-2 pr-3 font-mono text-[10px]">4c5b6a78…</td><td class="py-2 pr-3">hombre</td><td class="py-2 pr-3">81</td><td class="py-2 pr-3">Galicia</td><td class="py-2 pr-3">9.0</td><td class="py-2 pr-3">26.5</td><td class="py-2 pr-3">✓</td><td class="py-2 pr-3">—</td><td class="py-2 pr-3">✓</td><td class="py-2 pr-3">✓</td></tr>
+                <tr class="border-b"><td class="py-2 pr-3 font-mono text-[10px]">91a02f3b…</td><td class="py-2 pr-3">mujer</td><td class="py-2 pr-3">67</td><td class="py-2 pr-3">Murcia</td><td class="py-2 pr-3">7.0</td><td class="py-2 pr-3">33.1</td><td class="py-2 pr-3">✓</td><td class="py-2 pr-3">✓</td><td class="py-2 pr-3">—</td><td class="py-2 pr-3">—</td></tr>
+                <tr class="border-b"><td class="py-2 pr-3 font-mono text-[10px]">33e8c9d1…</td><td class="py-2 pr-3">hombre</td><td class="py-2 pr-3">54</td><td class="py-2 pr-3">País Vasco</td><td class="py-2 pr-3">6.4</td><td class="py-2 pr-3">25.9</td><td class="py-2 pr-3">—</td><td class="py-2 pr-3">—</td><td class="py-2 pr-3">—</td><td class="py-2 pr-3">—</td></tr>
+                <tr class="border-b"><td class="py-2 pr-3 font-mono text-[10px]">6b7d8e9f…</td><td class="py-2 pr-3">mujer</td><td class="py-2 pr-3">76</td><td class="py-2 pr-3">Andalucía</td><td class="py-2 pr-3">8.6</td><td class="py-2 pr-3">32.4</td><td class="py-2 pr-3">✓</td><td class="py-2 pr-3">✓</td><td class="py-2 pr-3">✓</td><td class="py-2 pr-3">✓</td></tr>
+                <tr><td class="py-2 pr-3 font-mono text-[10px]">21f3e4d5…</td><td class="py-2 pr-3">hombre</td><td class="py-2 pr-3">63</td><td class="py-2 pr-3">C. Valenciana</td><td class="py-2 pr-3">7.2</td><td class="py-2 pr-3">29.7</td><td class="py-2 pr-3">✓</td><td class="py-2 pr-3">—</td><td class="py-2 pr-3">—</td><td class="py-2 pr-3">—</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <!-- Sample SOAP note -->
+          <section class="mt-6 rounded-lg bg-white p-5 shadow-sm">
+            <h3 class="font-semibold text-sm mb-3">Nota clínica de muestra (Claude · SOAP)</h3>
+            <div class="rounded border border-slate-200 bg-slate-50 p-4 text-xs text-slate-700 leading-relaxed">
+              <p class="font-medium text-slate-600 mb-1">Paciente bdb4eb38… · Visita 2/4</p>
+              <p>
+                <span class="font-semibold">S:</span> Mujer de 65 años con DM2 de 8 años de evolución.
+                Refiere buena adherencia al tratamiento, sin hipoglucemias. Polidipsia leve.
+                <span class="font-semibold">O:</span> IMC 31,2 kg/m². TA 142/86. HbA1c 7,4 %.
+                FGe 71 mL/min. Perfil lipídico con LDL 118 mg/dL, HDL 48 mg/dL.
+                <span class="font-semibold">A:</span> DM2 con control glucémico moderado;
+                HTA y dislipemia asociadas; obesidad grado I. Sin retinopatía ni nefropatía conocidas.
+                <span class="font-semibold">P:</span> Mantener metformina 1 g/12 h; añadir iSGLT2
+                según guía ADA/EASD por perfil cardiorrenal. Optimizar IECA. Solicitar fondo de ojo
+                anual. Refuerzo educación nutricional.
+              </p>
+            </div>
+            <p class="text-[10px] text-slate-400 mt-2">
+              Generada por <code>claude-sonnet-4-5</code> a partir de los datos estructurados de la BN.
+              No se usaron datos reales en su entrenamiento.
+            </p>
+          </section>
+        </section>
+
+        <!-- ════════════ HISTORY ════════════ -->
+        <section data-page="history" hidden>
+          <h1 class="text-2xl font-bold">Historial de cohortes</h1>
+          <p class="text-sm text-slate-500 mt-1">Datasets generados recientemente.</p>
+
+          <div class="mt-6 rounded-lg bg-white shadow-sm overflow-x-auto">
+            <table class="min-w-full">
+              <thead>
+                <tr class="text-left text-xs text-slate-500 border-b">
+                  <th class="py-3 px-4 font-medium">Dataset ID</th>
+                  <th class="py-3 px-4 font-medium">Creado</th>
+                  <th class="py-3 px-4 font-medium">Pacientes</th>
+                  <th class="py-3 px-4 font-medium">Foco regional</th>
+                  <th class="py-3 px-4 font-medium">Notas SOAP</th>
+                  <th class="py-3 px-4 font-medium"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="text-sm border-b">
+                  <td class="py-3 px-4 font-mono text-xs">fa3e7c91-d0b8…</td>
+                  <td class="py-3 px-4">17/05/2026 12:34</td>
+                  <td class="py-3 px-4">200</td>
+                  <td class="py-3 px-4">any</td>
+                  <td class="py-3 px-4 text-emerald-700">sí</td>
+                  <td class="py-3 px-4"><button data-tab="results" class="text-blue-700 text-xs hover:underline">abrir →</button></td>
+                </tr>
+                <tr class="text-sm border-b">
+                  <td class="py-3 px-4 font-mono text-xs">7a2c1b50-9f4d…</td>
+                  <td class="py-3 px-4">17/05/2026 11:22</td>
+                  <td class="py-3 px-4">500</td>
+                  <td class="py-3 px-4">alta</td>
+                  <td class="py-3 px-4 text-slate-400">no</td>
+                  <td class="py-3 px-4"><button class="text-blue-700 text-xs hover:underline">abrir →</button></td>
+                </tr>
+                <tr class="text-sm border-b">
+                  <td class="py-3 px-4 font-mono text-xs">d8e91f2a-3b7c…</td>
+                  <td class="py-3 px-4">16/05/2026 17:05</td>
+                  <td class="py-3 px-4">100</td>
+                  <td class="py-3 px-4">media</td>
+                  <td class="py-3 px-4 text-slate-400">no</td>
+                  <td class="py-3 px-4"><button class="text-blue-700 text-xs hover:underline">abrir →</button></td>
+                </tr>
+                <tr class="text-sm">
+                  <td class="py-3 px-4 font-mono text-xs">4c5b6a78-1e2f…</td>
+                  <td class="py-3 px-4">14/05/2026 09:15</td>
+                  <td class="py-3 px-4">1 000</td>
+                  <td class="py-3 px-4">any</td>
+                  <td class="py-3 px-4 text-emerald-700">sí</td>
+                  <td class="py-3 px-4"><button class="text-blue-700 text-xs hover:underline">abrir →</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </main>
+
+      <footer class="mt-16 border-t border-slate-200 py-6 text-center text-xs text-slate-400">
+        Datos 100 % sintéticos · EHDS-compliant · No usar para conclusiones clínicas
+      </footer>
+    </div>
+
+    <script>
+      // Navegación entre páginas — los botones [data-tab] muestran su sección.
+      document.querySelectorAll('[data-tab]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const target = btn.dataset.tab;
+          document.querySelectorAll('[data-page]').forEach((sec) => {
+            sec.hidden = sec.dataset.page !== target;
+          });
+          document.querySelectorAll('.nav-tab').forEach((nav) => {
+            nav.classList.toggle('active', nav.dataset.tab === target);
+          });
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      });
+    </script>
+
+    <!-- Entry point Vite (no-op en preview estática) -->
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
