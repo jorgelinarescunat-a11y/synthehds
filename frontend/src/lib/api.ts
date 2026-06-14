@@ -1,5 +1,4 @@
-// Cliente API mínimo — usa fetch nativo. El backend está expuesto vía
-// proxy de Vite (ver vite.config.ts).
+﻿const API = window.location.hostname === "localhost" ? "" : "https://synthehds-backend.onrender.com";
 
 export interface CohortConfig {
   n_patients: number;
@@ -13,7 +12,6 @@ export interface CohortConfig {
   output_formats: ("csv" | "fhir" | "omop" | "all")[];
   seed: number | null;
 }
-
 export interface JobStatus {
   job_id: string;
   status: "queued" | "running" | "done" | "failed";
@@ -24,9 +22,8 @@ export interface JobStatus {
   created_at: string;
   updated_at: string;
 }
-
 export async function generateCohort(cfg: CohortConfig): Promise<{ job_id: string }> {
-  const r = await fetch("/api/cohorts/generate", {
+  const r = await fetch(`${API}/api/cohorts/generate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(cfg),
@@ -34,35 +31,29 @@ export async function generateCohort(cfg: CohortConfig): Promise<{ job_id: strin
   if (!r.ok) throw new Error(`POST /generate failed: ${r.status}`);
   return r.json();
 }
-
 export async function getJobStatus(jobId: string): Promise<JobStatus> {
-  const r = await fetch(`/api/cohorts/${jobId}/status`);
+  const r = await fetch(`${API}/api/cohorts/${jobId}/status`);
   if (!r.ok) throw new Error(`GET /status failed: ${r.status}`);
   return r.json();
 }
-
 export async function getPreview(jobId: string, limit = 20): Promise<any> {
-  const r = await fetch(`/api/cohorts/${jobId}/preview?limit=${limit}`);
+  const r = await fetch(`${API}/api/cohorts/${jobId}/preview?limit=${limit}`);
   if (!r.ok) throw new Error(`GET /preview failed: ${r.status}`);
   return r.json();
 }
-
 export async function getMetrics(jobId: string): Promise<any> {
-  const r = await fetch(`/api/cohorts/${jobId}/metrics`);
+  const r = await fetch(`${API}/api/cohorts/${jobId}/metrics`);
   if (!r.ok) throw new Error(`GET /metrics failed: ${r.status}`);
   return r.json();
 }
-
 export async function getHistory(): Promise<any[]> {
-  const r = await fetch(`/api/cohorts`);
+  const r = await fetch(`${API}/api/cohorts`);
   if (!r.ok) throw new Error(`GET /cohorts failed: ${r.status}`);
   return r.json();
 }
-
 export function downloadUrl(jobId: string, format: "csv" | "fhir" | "omop"): string {
-  return `/api/cohorts/${jobId}/data?format=${format}`;
+  return `${API}/api/cohorts/${jobId}/data?format=${format}`;
 }
-
 export function datasheetUrl(jobId: string): string {
-  return `/api/cohorts/${jobId}/datasheet`;
+  return `${API}/api/cohorts/${jobId}/datasheet`;
 }
